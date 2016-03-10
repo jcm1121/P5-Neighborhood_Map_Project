@@ -40,12 +40,12 @@ var model = {
 
 var ViewModel = function() {
 
-    //assign this to self represents the ViewModel (this)
+    //set self to represent the ViewModel (this)
     var self = this;
 
 };
 
-ko.applyBindings(new ViewModel());
+
 
 
 
@@ -64,16 +64,9 @@ var mapView = {
         var map=new google.maps.Map(document.getElementById("googleMap"),mapProp);
 
         //initialize last marker and its infowindow
-        var lastMarker = new google.maps.Marker({
-            position: model.livermoreHotspots[0].latLng,
-            map: map,
-            title: model.livermoreHotspots[0].name,
-            clickable: true
-        });
-        lastMarker.infowindow = new google.maps.InfoWindow({
-            content: lastMarker.title
-        });
-        console.log('lastMarker value is: ' + lastMarker);
+        var markerArray = [];
+        var lastMarker = 0;
+
 
         var addMarkers = function () {
             for(var i=0; i < model.livermoreHotspots.length; i++) {
@@ -81,25 +74,37 @@ var mapView = {
                 var latLng = model.livermoreHotspots[i].latLng;
                 var name = model.livermoreHotspots[i].name;
 
-                var marker = new google.maps.Marker({
+                markerArray[i] = new google.maps.Marker({
                     position: latLng,
                     map: map,
                     title: name,
+                    animation: google.maps.Animation.DROP,
                     clickable: true
                 });
-
-
-                marker.addListener('click', (function(marker) {
-                    lastMarker.infowindow.close();
-                    lastMarker = marker;
-                    marker.infowindow = new google.maps.InfoWindow({
-                        content: marker.title
+                markerArray[i].infowindow = new google.maps.InfoWindow({
+                        content: markerArray[i].title
                     });
-                    return function() {marker.infowindow.open(map, marker);}
-                    })(marker) );
+
+                markerArray[i].addListener('click', (function(marker) {
+                    return function() {
+                        markerArray[lastMarker].infowindow.close();
+                        lastMarker = mapView.setLastMarker(marker.title);
+                        marker.infowindow.open(map, marker);
+                    }
+                    })(markerArray[i]) );
             };
         };
         addMarkers();
+    },
+
+    setLastMarker: function(name) {
+        console.log('getLastMarker incoming name is: ' + name);
+        for(var i=0; i < model.livermoreHotspots.length; i++) {
+            if  (model.livermoreHotspots[i].name === name) {
+                console.log(i);
+                return i;
+            }
+        };
     }
 };
 
