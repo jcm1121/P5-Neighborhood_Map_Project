@@ -1,7 +1,6 @@
 
-
 var model = {
-    livermoreHotspots: [
+    livermoreHotspotsArray: [
         {
             name: 'V&E Club',
             latLng: {lat: 37.680984, lng: -121.770174}
@@ -38,17 +37,6 @@ var model = {
 };
 
 
-var ViewModel = function() {
-
-    //set self to represent the ViewModel (this)
-    var self = this;
-
-};
-
-
-
-
-
 
 var mapView = {
 
@@ -60,19 +48,16 @@ var mapView = {
           mapTypeId:google.maps.MapTypeId.ROADMAP
         };
 
-
         var map=new google.maps.Map(document.getElementById("googleMap"),mapProp);
 
-        //initialize last marker and its infowindow
-        var markerArray = [];
-        var lastMarker = 0;
-
-
         var addMarkers = function () {
-            for(var i=0; i < model.livermoreHotspots.length; i++) {
+            //initialize last marker and its infowindow
+            var markerArray = [];
+            var lastMarker = 0;
+            for(var i=0; i < model.livermoreHotspotsArray.length; i++) {
 
-                var latLng = model.livermoreHotspots[i].latLng;
-                var name = model.livermoreHotspots[i].name;
+                var latLng = model.livermoreHotspotsArray[i].latLng;
+                var name = model.livermoreHotspotsArray[i].name;
 
                 markerArray[i] = new google.maps.Marker({
                     position: latLng,
@@ -88,19 +73,22 @@ var mapView = {
                 markerArray[i].addListener('click', (function(marker) {
                     return function() {
                         markerArray[lastMarker].infowindow.close();
+                        markerArray[lastMarker].setAnimation(null);
                         lastMarker = mapView.setLastMarker(marker.title);
+                        marker.setAnimation(google.maps.Animation.BOUNCE);
                         marker.infowindow.open(map, marker);
                     }
-                    })(markerArray[i]) );
+                })(markerArray[i]) );
             };
         };
         addMarkers();
     },
 
+
     setLastMarker: function(name) {
         console.log('getLastMarker incoming name is: ' + name);
-        for(var i=0; i < model.livermoreHotspots.length; i++) {
-            if  (model.livermoreHotspots[i].name === name) {
+        for(var i=0; i < model.livermoreHotspotsArray.length; i++) {
+            if  (model.livermoreHotspotsArray[i].name === name) {
                 console.log(i);
                 return i;
             }
@@ -108,13 +96,28 @@ var mapView = {
     }
 };
 
-var mapListView = {
-
-    initialize: function() {
-
-
-    }
+var HotSpot = function(data) {
+    this.hotSpotName = ko.observable(data.name);
+    this.hotSpotLatLng = ko.observable(data.latLng);
 };
 
 
+
+
+var ViewModel = function() {
+
+
+    //declare self to represent this ViewModel.
+    var self = this;
+
+    //declare hotSpotList observable arary
+    this.hotSpotList = ko.observableArray([]);
+
+    //load hotSpotList observable array with model data.
+    model.livermoreHotspotsArray.forEach(function(hotSpot) {
+        self.hotSpotList.push(new HotSpot(hotSpot));
+    });
+};
+
+ko.applyBindings(new ViewModel());
 google.maps.event.addDomListener(window, 'load', mapView.initialize);

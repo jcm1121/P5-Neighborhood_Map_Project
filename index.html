@@ -11,13 +11,11 @@
     <div class="container">
         <div class="hotSpots">
             <h2>Livermore Hotspots</h2>
-            <ul id="hotSpotList">
-                <li class="hotSpotName"></li>
+            <ul data-bind="foreach: hotSpotList">
+                <li data-bind="text: hotSpotName, click: $parent.viewHotSpot"></li>
             </ul>
         </div>
         <div id="googleMap" class="googleMap"></div>
-
-
     </div>
 
     <script src="http://maps.googleapis.com/maps/api/js"></script>
