@@ -18,8 +18,8 @@ var model = {
             latLng: {lat: 37.681094, lng: -121.769726}
         },
         {
-            name: 'Tips & Toes Nail Spa',
-            latLng: {lat: 37.681249, lng: -121.770753}
+            name: 'Sauced BBQ and Spirits',
+            latLng: {lat: 37.682666, lng: -121.768160}
         },
         {
             name: 'Los Caporeles Taquiria',
@@ -62,7 +62,6 @@ var ViewModel = function() {
 
     initialize = function() {
         var mapProp = {
-          //center:new google.maps.LatLng(37.6819, -121.7681),
           center:new google.maps.LatLng(37.6819, -121.7681),
           zoom:15,
           mapTypeId:google.maps.MapTypeId.ROADMAP
@@ -81,7 +80,7 @@ var ViewModel = function() {
                 var latLng = model.livermoreHotspotsArray[i].latLng;
                 var name = model.livermoreHotspotsArray[i].name;
 
-                //load each element of the marker array
+                //assign each element of the marker array
                 //with the hotspot lattitude/longitude
                 markerArray[i] = new google.maps.Marker({
                     position: latLng,
@@ -123,12 +122,12 @@ var ViewModel = function() {
 
 
     this.viewHotSpot = function(hotSpot) {
-        console.log('hotspot title' + hotSpot.title);
-//        markerArray[lastMarker].infowindow.close();
-//        markerArray[lastMarker].setAnimation(null);
-//        lastMarker = setLastMarker(hotSpot.title);
-//        hotSpot.setAnimation(google.maps.Animation.BOUNCE);
-//        hotSpot.infowindow.open(map, hotSpot);
+        console.log('hotspot title' + this.hotSpot);
+        markerArray[lastMarker].infowindow.close();
+        markerArray[lastMarker].setAnimation(null);
+        lastMarker = setLastMarker(this.hotSpot.title);
+        this.hotSpot.setAnimation(google.maps.Animation.BOUNCE);
+        this.hotSpot.infowindow.open(map, this.hotSpot);
 
     };
 
