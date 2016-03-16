@@ -57,11 +57,16 @@ var ViewModel = function() {
     //load hotSpotList observable array with model data.
     model.livermoreHotspotsArray.forEach(function(arrayItem) {
         self.hotSpotList.push(new HotSpot(arrayItem));
+        console.log('hotSpotList name : ' + self.hotSpotList()[0].hotSpotName);
     });
+
+    //declare current hotSpot
+    this.currentHotSpot = ko.observable(this.hotSpotList()[0]);
 
 
     initialize = function() {
         var mapProp = {
+          //center:new google.maps.LatLng(37.6819, -121.7681),
           center:new google.maps.LatLng(37.6819, -121.7681),
           zoom:15,
           mapTypeId:google.maps.MapTypeId.ROADMAP
@@ -71,12 +76,11 @@ var ViewModel = function() {
         var map=new google.maps.Map(document.getElementById("googleMap"),mapProp);
 
         var addMarkers = function () {
-            //loop through the model data and create a marker
-            //for each hotspot element
+            //loop through the model data and create a marker,
+            //info window, and click event listner for each hotspot element
             for(var i=0; i < model.livermoreHotspotsArray.length; i++) {
 
-                //assign each hotspot's lattitude/longitude
-                //and name values
+                //assign lattitude/longitude & name values
                 var latLng = model.livermoreHotspotsArray[i].latLng;
                 var name = model.livermoreHotspotsArray[i].name;
 
@@ -110,6 +114,8 @@ var ViewModel = function() {
         addMarkers();
     };
 
+
+
     setLastMarker = function(name) {
         console.log('setLastMarker incoming name is: ' + name);
         for(var i=0; i < model.livermoreHotspotsArray.length; i++) {
@@ -122,12 +128,18 @@ var ViewModel = function() {
 
 
     this.viewHotSpot = function(hotSpot) {
-        console.log('hotspot title' + this.hotSpot);
+        //set current hotSpot to the hotSpot
+        //clicked in the list
+        self.currentHotSpot(hotSpot);
+
         markerArray[lastMarker].infowindow.close();
         markerArray[lastMarker].setAnimation(null);
-        lastMarker = setLastMarker(this.hotSpot.title);
-        this.hotSpot.setAnimation(google.maps.Animation.BOUNCE);
-        this.hotSpot.infowindow.open(map, this.hotSpot);
+        console.log('last marker value : ' + lastMarker);
+        lastMarker = setLastMarker(self.currentHotSpot().hotSpotName());
+        console.log('last marker value after assignment : ' + lastMarker);
+
+//        hotSpot.setAnimation(google.maps.Animation.BOUNCE);
+//        this.hotSpot.infowindow.open(map, this.hotSpot);
 
     };
 
