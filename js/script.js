@@ -3,44 +3,59 @@ var model = {
     livermoreHotspotsArray: [
         {
             name: 'V&E Club',
-            address: '2071 First St',
-            latLng: {lat: 37.680984, lng: -121.770174}
-
+            address: '2071 First St., Livermore, CA.',
+            latLng: {lat: 37.680984, lng: -121.770174},
+            id: 'v-and-e-club-livermore',
+            url: ''
         },
             {
             name: 'First Street Wine',
-            address: '2211 First St',
-            latLng: {lat: 37.681460, lng: -121.768434}
+            address: '2211 First St., Livermore, CA.',
+            latLng: {lat: 37.681460, lng: -121.768434},
+            id: 'first-street-wine-company-livermore',
+            url: 'www.wineco.com'
         },
         {
-            name: 'Sansar indian Cuisine',
-            address: '2220 First St',
-            latLng: {lat: 37.681848, lng: -121.768849}
+            name: 'Sansar Indian Cuisine',
+            address: '2220 First St., Livermore, CA.',
+            latLng: {lat: 37.681848, lng: -121.768849},
+            id: 'sansar-indian-cuisine-livermore-4',
+            url: 'www.sansarindiancuisine.com'
         },
         {
             name: 'Panama Red Coffee Co.',
-            address: '2115 First S',
-            latLng: {lat: 37.681094, lng: -121.769726}
+            address: '2115 First St., Livermore, CA.',
+            latLng: {lat: 37.681094, lng: -121.769726},
+            id: 'panama-red-coffee-livermore',
+            url: 'www.panamaredcoffee.com'
         },
         {
             name: 'Sauced BBQ and Spirits',
-            address: '2300 First St #120',
-            latLng: {lat: 37.682666, lng: -121.768160}
+            address: '2300 First St. #120, Livermore, CA.',
+            latLng: {lat: 37.682666, lng: -121.768160},
+            id: 'sauced-bbq-and-spirits-livermore',
+            url: 'saucedbbqandspirits.com'
         },
         {
-            name: 'Los Caporeles Taquiria',
-            address: '2130 First St',
-            latLng: {lat: 37.681561, lng: -121.769756}
+            name: 'Los Caporales Taqueria',
+            address: '2130 First St., Livermore, CA.',
+            latLng: {lat: 37.681561, lng: -121.769756},
+            id: 'taqueria-los-caporales-livermore',
+            url: ''
         },
         {
             name: 'Double Barrel Wine Bar',
-            address: '2086 First St',
-            latLng: {lat: 37.681451, lng: -121.770129}
+            address: '2086 First St., Livermore, CA.',
+            latLng: {lat: 37.681451, lng: -121.770129},
+            id: 'double-barrel-wine-bar-livermore',
+            url: 'doublebarrelwinebar.com'
         },
         {
             name: 'First Street Alehouse',
-            address: '2106 First St',
-            latLng: {lat: 37.681543, lng: -121.769975}
+            address: '2106 First St., Livermore, CA.',
+            latLng: {lat: 37.681543, lng: -121.769975},
+            id: 'first-street-alehouse-livermore',
+            url: 'www.firststreetalehouse.com'
         }
     ]
 };
@@ -48,8 +63,12 @@ var model = {
 //Hotspot Constructor
 var HotSpot = function(data) {
     this.hotSpotName = ko.observable(data.name);
-    this.hotSpotLatLng = ko.observable(data.latLng);
+    this.hotSpotAddress = data.address;
+    this.hotSpotLatLng = data.latLng;
+    this.hotSpotId = data.id;
+    this.hotSpotUrl - data.url
 };
+
 
 var ViewModel = function() {
 
@@ -61,6 +80,27 @@ var ViewModel = function() {
     var lastMarker = 0;
     var map = null;
 
+        // Removes the markers from the map, but keeps them in the array.
+    function clearMarkers() {
+        console.log('clearMarkers');
+        for (var i = 0; i < markerArray.length; i++) {
+            markerArray[i].infowindow.close();
+            markerArray[i].setMap(null);
+        };
+    };
+
+    function setMarker(hotSpot) {
+        console.log('set marker name.toLowerCase is: ' + hotSpot.hotSpotName().toLowerCase());
+        for(var i=0; i < markerArray.length; i++) {
+            if  (markerArray[i].title.toLowerCase() === hotSpot.hotSpotName().toLowerCase()) {
+                console.log('inside setMarker setting marker: ' + markerArray[i].title);
+                markerArray[i].setMap(map);
+
+            }
+        };
+    };
+
+
     //declare hotSpotList observable array
     self.hotSpotList = ko.observableArray([]);
 
@@ -71,14 +111,26 @@ var ViewModel = function() {
     });
 
     //declare current hotSpot
-    self.currentHotSpot = ko.observable(this.hotSpotList()[0]);
+    self.currentHotSpot = ko.observable(this.hotSpotList()[7]);
 
     //declare query observable used to search hotSpotList
     self.query = ko.observable('');
 
+    //declare search computed observable to render the filtered
+    //hotSpotList elements on the page
+    self.search = ko.computed(function() {
+        clearMarkers();
+        return ko.utils.arrayFilter(self.hotSpotList(), function(hotSpot) {
+            if (hotSpot.hotSpotName().toLowerCase().indexOf(self.query().toLowerCase()) >= 0)
+                setMarker(hotSpot);
+            return hotSpot.hotSpotName().toLowerCase().indexOf(self.query().toLowerCase()) >= 0;
+        });
+    });
+
+
     initialize = function() {
+        console.log('entering initialize function');
         var mapProp = {
-          //center:new google.maps.LatLng(37.6819, -121.7681),
           center:new google.maps.LatLng(37.6819, -121.7681),
           zoom:15,
           mapTypeId:google.maps.MapTypeId.ROADMAP
@@ -95,6 +147,26 @@ var ViewModel = function() {
                 //assign lattitude/longitude & name values
                 var latLng = model.livermoreHotspotsArray[i].latLng;
                 var name = model.livermoreHotspotsArray[i].name;
+                var address = model.livermoreHotspotsArray[i].address;
+                var url = model.livermoreHotspotsArray[i].url;
+                var svString = 'https://maps.googleapis.com/maps/api/streetview?size=200x120&location=' + address;
+
+
+                var contentString =
+                    '<div id="iw-container">'+
+                        '<div id="iw-body">'+
+                            '</div>'+
+                                '<h3 id="iw-title" class="iw-title">'+ name + '</h3>'+
+                                '<div id="iwContent">'+
+                                    '<p>' + address + '</p>'+
+                                    '<img class="iw-img" src="' + svString + '">' +
+                                    '<br>' +
+                                    '<br>' +
+                                    '<a href="http:\\' + url + '">Visit:  ' + name + '</a>'
+                                '</div>'+
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
 
                 //assign each element of the marker array
                 //with the hotspot lattitude/longitude
@@ -108,7 +180,7 @@ var ViewModel = function() {
 
                 //declare an infowindow for each marker
                 markerArray[i].infowindow = new google.maps.InfoWindow({
-                        content: markerArray[i].title
+                        content: contentString
                     });
 
                 //declare a click event for each marker
@@ -126,7 +198,6 @@ var ViewModel = function() {
         };
         addMarkers();
     };
-
 
 
     setLastMarker = function(name) {
@@ -164,10 +235,74 @@ var ViewModel = function() {
     };
 
 
-google.maps.event.addDomListener(window, 'load', initialize());
+function callYelp() {
 
+        YELP_KEY = 'VjJd2U6caWsD2g38tKHMXQ';
+        YELP_TOKEN = 'gyokE6rE7mBgDJLRtS_5KDs5fg8JiQwf';
+        YELP_KEY_SECRET = 'CYxufrUy2vCYVt1IZeY-gl2PBTc';
+        YELP_TOKEN_SECRET = 'soyEBse-Ftw2yEeROG6sGoSgc6Q';
+        YELP_BASE_URL = 'https://api.yelp.com/v2/';
 
+        /**
+         * Generates a random number and returns it as a string for OAuthentication
+         * @return {string}
+         */
+        function nonce_generate() {
+          return (Math.floor(Math.random() * 1e12).toString());
+        }
 
+        console.log('currentHotSpot id: ' + self.currentHotSpot().hotSpotId);
+        var yelp_url = YELP_BASE_URL + 'business/' + self.currentHotSpot().hotSpotId;
+
+            var parameters = {
+              oauth_consumer_key: YELP_KEY,
+              oauth_token: YELP_TOKEN,
+              oauth_nonce: nonce_generate(),
+              oauth_timestamp: Math.floor(Date.now()/1000),
+              oauth_signature_method: 'HMAC-SHA1',
+              oauth_version : '1.0',
+              callback: 'cb'
+            };
+
+            var encodedSignature = oauthSignature.generate('GET',yelp_url, parameters, YELP_KEY_SECRET, YELP_TOKEN_SECRET);
+            parameters.oauth_signature = encodedSignature;
+
+            var settings = {
+              url: yelp_url,
+              data: parameters,
+              cache: true,
+              dataType: 'jsonp',
+              success: function(results) {
+                console.log(results);
+                console.log(results.location.display_address[0]);
+                console.log(results.location.display_address[1]);
+                console.log(results.name);
+                console.log(results.image_url);
+                console.log(results.phone);
+              },
+              fail: function() {
+                console.log('yelp call failed')
+              }
+            };
+
+            // Send AJAX query via jQuery library.
+            $.ajax(settings);
 };
 
-ko.applyBindings(new ViewModel());
+    callYelp();
+    google.maps.event.addDomListener(window, 'load', initialize());
+
+};  //end of View Model
+
+
+function googleSuccess() {
+    console.log('in googleSuccess');
+    ko.applyBindings(new ViewModel());
+};
+function googleError() {
+    alert('I'm sorry we seem to have lost our internet connection);
+    console.log('in googleErro');
+};
+
+
+
