@@ -2,60 +2,49 @@
 var Model = {
     livermoreHotspotsArray: [
         {
+            name: 'Livermore 13 Cinemas',
+            latLng: {lat: 37.6835518, lng: -121.7673569},
+            id: 'livermore-13-cinemas-livermore'
+        },
+        {
             name: 'V&E Club',
-            address: '2071 First St., Livermore, CA.',
             latLng: {lat: 37.680984, lng: -121.770174},
-            id: 'v-and-e-club-livermore',
-            url: ''
+            id: 'v-and-e-club-livermore'
         },
             {
-            name: 'First Street Wine',
-            address: '2211 First St., Livermore, CA.',
+            name: 'First Street Wine Company',
             latLng: {lat: 37.681460, lng: -121.768434},
-            id: 'first-street-wine-company-livermore',
-            url: 'www.wineco.com'
+            id: 'first-street-wine-company-livermore'
         },
         {
             name: 'Sansar Indian Cuisine',
-            address: '2220 First St., Livermore, CA.',
             latLng: {lat: 37.681848, lng: -121.768849},
-            id: 'sansar-indian-cuisine-livermore-4',
-            url: 'www.sansarindiancuisine.com'
+            id: 'sansar-indian-cuisine-livermore-4'
         },
         {
-            name: 'Panama Red Coffee Co.',
-            address: '2115 First St., Livermore, CA.',
+            name: 'Panama Red Coffee',
             latLng: {lat: 37.681094, lng: -121.769726},
-            id: 'panama-red-coffee-livermore',
-            url: 'www.panamaredcoffee.com'
+            id: 'panama-red-coffee-livermore'
         },
         {
-            name: 'Sauced BBQ and Spirits',
-            address: '2300 First St. #120, Livermore, CA.',
+            name: 'Sauced BBQ & Spirits',
             latLng: {lat: 37.682666, lng: -121.768160},
-            id: 'sauced-bbq-and-spirits-livermore',
-            url: 'saucedbbqandspirits.com'
+            id: 'sauced-bbq-and-spirits-livermore'
         },
         {
-            name: 'Los Caporales Taqueria',
-            address: '2130 First St., Livermore, CA.',
+            name: 'Taqueria Los Caporales',
             latLng: {lat: 37.681561, lng: -121.769756},
-            id: 'taqueria-los-caporales-livermore',
-            url: ''
+            id: 'taqueria-los-caporales-livermore'
         },
         {
             name: 'Double Barrel Wine Bar',
-            address: '2086 First St., Livermore, CA.',
             latLng: {lat: 37.681451, lng: -121.770129},
-            id: 'double-barrel-wine-bar-livermore',
-            url: 'doublebarrelwinebar.com'
+            id: 'double-barrel-wine-bar-livermore'
         },
         {
             name: 'First Street Alehouse',
-            address: '2106 First St., Livermore, CA.',
             latLng: {lat: 37.681543, lng: -121.769975},
-            id: 'first-street-alehouse-livermore',
-            url: 'www.firststreetalehouse.com'
+            id: 'first-street-alehouse-livermore'
         }
     ]
 };
@@ -63,10 +52,8 @@ var Model = {
 //Hotspot Constructor
 var HotSpot = function(data) {
     this.hotSpotName = ko.observable(data.name);
-    this.hotSpotAddress = data.address;
     this.hotSpotLatLng = data.latLng;
     this.hotSpotId = data.id;
-    this.hotSpotUrl - data.url
 };
 
 
@@ -75,30 +62,12 @@ var ViewModel = function() {
                     //declare self to represent this ViewModel.
                     var self = this;
 
-                    //declare markerArray and last marker, and map
+                    //declare markerArray, last marker, and map
                     var markerArray = [];
                     var lastMarker = 0;
                     var map = null;
 
-                        // Removes the markers from the map, but keeps them in the array.
-                    function clearMarkers() {
-                        console.log('clearMarkers');
-                        for (var i = 0; i < markerArray.length; i++) {
-                            markerArray[i].infowindow.close();
-                            markerArray[i].setMap(null);
-                        };
-                    };
 
-                    function setMarker(hotSpot) {
-                        console.log('set marker name.toLowerCase is: ' + hotSpot.hotSpotName().toLowerCase());
-                        for(var i=0; i < markerArray.length; i++) {
-                            if  (markerArray[i].title.toLowerCase() === hotSpot.hotSpotName().toLowerCase()) {
-                                console.log('inside setMarker setting marker: ' + markerArray[i].title);
-                                markerArray[i].setMap(map);
-
-                            }
-                        };
-                    };
 
 
                     //declare hotSpotList observable array
@@ -107,11 +76,10 @@ var ViewModel = function() {
                     //load hotSpotList observable array with Model data.
                     Model.livermoreHotspotsArray.forEach(function(arrayItem) {
                         self.hotSpotList.push(new HotSpot(arrayItem));
-                        console.log('hotSpotList name : ' + self.hotSpotList()[0].hotSpotName);
                     });
 
                     //declare current hotSpot
-                    self.currentHotSpot = ko.observable(this.hotSpotList()[3]);
+                    self.currentHotSpot = ko.observable(this.hotSpotList()[0]);
 
                     //declare query observable used to search hotSpotList
                     self.query = ko.observable('');
@@ -119,6 +87,7 @@ var ViewModel = function() {
                     //declare search computed observable to render the filtered
                     //hotSpotList elements on the page
                     self.search = ko.computed(function() {
+                        console.log('calling clearMarkers from seach');
                         clearMarkers();
                         return ko.utils.arrayFilter(self.hotSpotList(), function(hotSpot) {
                             if (hotSpot.hotSpotName().toLowerCase().indexOf(self.query().toLowerCase()) >= 0)
@@ -139,6 +108,9 @@ var ViewModel = function() {
         //declare map and assign a new google map
         map = new google.maps.Map(document.getElementById("googleMap"),mapProp);
 
+        //loop through the model data creating a marker, infowindow,
+        //click event, and make an AJAX call to yelp for infowindow content
+        //on each model data entry
         var addMarkers = function () {
             //loop through the Model data and create a marker,
             //info window, and click event listner for each hotspot element
@@ -148,13 +120,9 @@ var ViewModel = function() {
                 var id = Model.livermoreHotspotsArray[i].id;
                 var latLng = Model.livermoreHotspotsArray[i].latLng;
                 var name = Model.livermoreHotspotsArray[i].name;
-                var address = Model.livermoreHotspotsArray[i].address;
-                var url = Model.livermoreHotspotsArray[i].url;
-                var svString = 'https://maps.googleapis.com/maps/api/streetview?size=200x120&location=' + address;
+
 
                 var contentString = '';
-
-//                                var yelpCall = function() {
 
                 YELP_KEY = 'VjJd2U6caWsD2g38tKHMXQ';
                 YELP_TOKEN = 'gyokE6rE7mBgDJLRtS_5KDs5fg8JiQwf';
@@ -162,7 +130,7 @@ var ViewModel = function() {
                 YELP_TOKEN_SECRET = 'soyEBse-Ftw2yEeROG6sGoSgc6Q';
                 YELP_BASE_URL = 'https://api.yelp.com/v2/';
 
-                /**
+               /**
                  * Generates a random number and returns it as a string for OAuthentication
                  * @return {string}
                  */
@@ -170,7 +138,7 @@ var ViewModel = function() {
                   return (Math.floor(Math.random() * 1e12).toString());
                 }
 
-                //console.log('currentHotSpot id: ' + self.currentHotSpot().hotSpotId);
+                //declare and build the yelp url
                 var yelp_url = YELP_BASE_URL + 'business/' + Model.livermoreHotspotsArray[i].id;
 
                 var parameters = {
@@ -199,7 +167,7 @@ var ViewModel = function() {
                         var phone = results.phone;
                         var rating = results.rating;
                         var img = results.image_url;
-                        var contentString =
+                        contentString =
                             '<div id="iw-container">'+
                                 '<div id="iw-body">'+
                                     '</div>'+
@@ -213,6 +181,11 @@ var ViewModel = function() {
                                     '</div>' +
                                 '</div>' +
                             '</div>';
+
+                        //call setSetInfoWindowContent passing
+                        //the name and content string
+                        setInfoWindowContent(name, contentString);
+
                     },
                     fail: function() {
                         console.log('yelp call failed')
@@ -220,7 +193,6 @@ var ViewModel = function() {
                 };
                 // Send AJAX query via jQuery library.
                 $.ajax(settings);
-
 
                 //assign each element of the marker array
                 //with the hotspot lattitude/longitude
@@ -232,6 +204,7 @@ var ViewModel = function() {
                     clickable: true
                 });
 
+                console.log('just before infowindow contentString: ' + contentString);
                 //declare an infowindow for each marker
                 markerArray[i].infowindow = new google.maps.InfoWindow({
                     content: contentString
@@ -248,11 +221,33 @@ var ViewModel = function() {
                         marker.infowindow.open(map, marker);
                     }
                 })(markerArray[i]));
-            };
-        };
+            }; //end of for loop
+        };//end of addMarkers function
         addMarkers();
+    }; //end of initialize function
+
+
+    //Remove the markers from the map, but keep them in the array.
+    function clearMarkers() {
+        console.log('clearMarkers');
+        for (var i = 0; i < markerArray.length; i++) {
+            markerArray[i].infowindow.close();
+            markerArray[i].setMap(null);
+        };
     };
 
+    //search the markerArray for a matching name and turn on marker 'setMap'
+    function setMarker(hotSpot) {
+        console.log('set marker name.toLowerCase is: ' + hotSpot.hotSpotName().toLowerCase());
+        for(var i=0; i < markerArray.length; i++) {
+            if  (markerArray[i].title.toLowerCase() === hotSpot.hotSpotName().toLowerCase()) {
+                console.log('inside setMarker setting marker: ' + markerArray[i].title);
+                markerArray[i].setMap(map);
+            }
+        };
+    };
+
+    //return the index of the marker that matches the name passed
     setLastMarkerIndex = function(name) {
         console.log('setLastMarkerIndex incoming name is: ' + name);
         for(var i=0; i < Model.livermoreHotspotsArray.length; i++) {
@@ -263,22 +258,21 @@ var ViewModel = function() {
         };
     };
 
-
+    //this function is called from the
+    //click event on the hotspotlist element
     this.viewHotSpot = function(hotSpot) {
         //set current hotSpot to the hotSpot
         //clicked in the list
         self.currentHotSpot(hotSpot);
 
+        //close last marker
         markerArray[lastMarker].infowindow.close();
         markerArray[lastMarker].setAnimation(null);
-        console.log('last marker value : ' + lastMarker);
+        //set clicked marker to last marker
         lastMarker = setLastMarkerIndex(self.currentHotSpot().hotSpotName());
-        console.log('last marker value after assignment : ' + lastMarker);
-        openHotSpotInfoWindow(hotSpot);
-    };
 
-    openHotSpotInfoWindow = function(hotSpot) {
-        console.log('openHotSpotInfoWindow name is: ' + hotSpot.hotSpotName());
+        //open clicked marker by searching the markerArray
+        //for a name match and open that marker's infowindow
         for(var i=0; i < markerArray.length; i++) {
             if  (markerArray[i].title === hotSpot.hotSpotName()) {
                 markerArray[i].setAnimation(google.maps.Animation.BOUNCE);
@@ -287,6 +281,21 @@ var ViewModel = function() {
         };
     };
 
+    //search markerArray for name match and
+    //set infowindow content
+    setInfoWindowContent = function(name, content) {
+            for(var i=0; i < markerArray.length; i++) {
+                console.log('inside for loop of infowindw')
+                if  (markerArray[i].title === name) {
+                    console.log('InfoWindowContent name is:' + name);
+                    markerArray[i].infowindow.setContent(content);
+                };
+            };
+    };
+
+
+
+    console.log('end of View Model');
     google.maps.event.addDomListener(window, 'load', initialize());
 
 };  //end of View Model
