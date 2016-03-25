@@ -1,5 +1,5 @@
 
-var model = {
+var Model = {
     livermoreHotspotsArray: [
         {
             name: 'V&E Club',
@@ -72,60 +72,60 @@ var HotSpot = function(data) {
 
 var ViewModel = function() {
 
-    //declare self to represent this ViewModel.
-    var self = this;
+                    //declare self to represent this ViewModel.
+                    var self = this;
 
-    //declare markerArray and last marker, and map
-    var markerArray = [];
-    var lastMarker = 0;
-    var map = null;
+                    //declare markerArray and last marker, and map
+                    var markerArray = [];
+                    var lastMarker = 0;
+                    var map = null;
 
-        // Removes the markers from the map, but keeps them in the array.
-    function clearMarkers() {
-        console.log('clearMarkers');
-        for (var i = 0; i < markerArray.length; i++) {
-            markerArray[i].infowindow.close();
-            markerArray[i].setMap(null);
-        };
-    };
+                        // Removes the markers from the map, but keeps them in the array.
+                    function clearMarkers() {
+                        console.log('clearMarkers');
+                        for (var i = 0; i < markerArray.length; i++) {
+                            markerArray[i].infowindow.close();
+                            markerArray[i].setMap(null);
+                        };
+                    };
 
-    function setMarker(hotSpot) {
-        console.log('set marker name.toLowerCase is: ' + hotSpot.hotSpotName().toLowerCase());
-        for(var i=0; i < markerArray.length; i++) {
-            if  (markerArray[i].title.toLowerCase() === hotSpot.hotSpotName().toLowerCase()) {
-                console.log('inside setMarker setting marker: ' + markerArray[i].title);
-                markerArray[i].setMap(map);
+                    function setMarker(hotSpot) {
+                        console.log('set marker name.toLowerCase is: ' + hotSpot.hotSpotName().toLowerCase());
+                        for(var i=0; i < markerArray.length; i++) {
+                            if  (markerArray[i].title.toLowerCase() === hotSpot.hotSpotName().toLowerCase()) {
+                                console.log('inside setMarker setting marker: ' + markerArray[i].title);
+                                markerArray[i].setMap(map);
 
-            }
-        };
-    };
+                            }
+                        };
+                    };
 
 
-    //declare hotSpotList observable array
-    self.hotSpotList = ko.observableArray([]);
+                    //declare hotSpotList observable array
+                    self.hotSpotList = ko.observableArray([]);
 
-    //load hotSpotList observable array with model data.
-    model.livermoreHotspotsArray.forEach(function(arrayItem) {
-        self.hotSpotList.push(new HotSpot(arrayItem));
-        console.log('hotSpotList name : ' + self.hotSpotList()[0].hotSpotName);
-    });
+                    //load hotSpotList observable array with Model data.
+                    Model.livermoreHotspotsArray.forEach(function(arrayItem) {
+                        self.hotSpotList.push(new HotSpot(arrayItem));
+                        console.log('hotSpotList name : ' + self.hotSpotList()[0].hotSpotName);
+                    });
 
-    //declare current hotSpot
-    self.currentHotSpot = ko.observable(this.hotSpotList()[7]);
+                    //declare current hotSpot
+                    self.currentHotSpot = ko.observable(this.hotSpotList()[3]);
 
-    //declare query observable used to search hotSpotList
-    self.query = ko.observable('');
+                    //declare query observable used to search hotSpotList
+                    self.query = ko.observable('');
 
-    //declare search computed observable to render the filtered
-    //hotSpotList elements on the page
-    self.search = ko.computed(function() {
-        clearMarkers();
-        return ko.utils.arrayFilter(self.hotSpotList(), function(hotSpot) {
-            if (hotSpot.hotSpotName().toLowerCase().indexOf(self.query().toLowerCase()) >= 0)
-                setMarker(hotSpot);
-            return hotSpot.hotSpotName().toLowerCase().indexOf(self.query().toLowerCase()) >= 0;
-        });
-    });
+                    //declare search computed observable to render the filtered
+                    //hotSpotList elements on the page
+                    self.search = ko.computed(function() {
+                        clearMarkers();
+                        return ko.utils.arrayFilter(self.hotSpotList(), function(hotSpot) {
+                            if (hotSpot.hotSpotName().toLowerCase().indexOf(self.query().toLowerCase()) >= 0)
+                                setMarker(hotSpot);
+                            return hotSpot.hotSpotName().toLowerCase().indexOf(self.query().toLowerCase()) >= 0;
+                        });
+                    });
 
 
     initialize = function() {
@@ -140,33 +140,87 @@ var ViewModel = function() {
         map = new google.maps.Map(document.getElementById("googleMap"),mapProp);
 
         var addMarkers = function () {
-            //loop through the model data and create a marker,
+            //loop through the Model data and create a marker,
             //info window, and click event listner for each hotspot element
-            for(var i=0; i < model.livermoreHotspotsArray.length; i++) {
+            for(var i=0; i < Model.livermoreHotspotsArray.length; i++) {
 
                 //assign lattitude/longitude & name values
-                var latLng = model.livermoreHotspotsArray[i].latLng;
-                var name = model.livermoreHotspotsArray[i].name;
-                var address = model.livermoreHotspotsArray[i].address;
-                var url = model.livermoreHotspotsArray[i].url;
+                var id = Model.livermoreHotspotsArray[i].id;
+                var latLng = Model.livermoreHotspotsArray[i].latLng;
+                var name = Model.livermoreHotspotsArray[i].name;
+                var address = Model.livermoreHotspotsArray[i].address;
+                var url = Model.livermoreHotspotsArray[i].url;
                 var svString = 'https://maps.googleapis.com/maps/api/streetview?size=200x120&location=' + address;
 
+                var contentString = '';
 
-                var contentString =
-                    '<div id="iw-container">'+
-                        '<div id="iw-body">'+
-                            '</div>'+
-                                '<h3 id="iw-title" class="iw-title">'+ name + '</h3>'+
-                                '<div id="iwContent">'+
-                                    '<p>' + address + '</p>'+
-                                    '<img class="iw-img" src="' + svString + '">' +
-                                    '<br>' +
-                                    '<br>' +
-                                    '<a href="http:\\' + url + '">Visit:  ' + name + '</a>'
-                                '</div>'+
-                            '</div>' +
-                        '</div>' +
-                    '</div>';
+//                                var yelpCall = function() {
+
+                YELP_KEY = 'VjJd2U6caWsD2g38tKHMXQ';
+                YELP_TOKEN = 'gyokE6rE7mBgDJLRtS_5KDs5fg8JiQwf';
+                YELP_KEY_SECRET = 'CYxufrUy2vCYVt1IZeY-gl2PBTc';
+                YELP_TOKEN_SECRET = 'soyEBse-Ftw2yEeROG6sGoSgc6Q';
+                YELP_BASE_URL = 'https://api.yelp.com/v2/';
+
+                /**
+                 * Generates a random number and returns it as a string for OAuthentication
+                 * @return {string}
+                 */
+                function nonce_generate() {
+                  return (Math.floor(Math.random() * 1e12).toString());
+                }
+
+                //console.log('currentHotSpot id: ' + self.currentHotSpot().hotSpotId);
+                var yelp_url = YELP_BASE_URL + 'business/' + Model.livermoreHotspotsArray[i].id;
+
+                var parameters = {
+                    oauth_consumer_key: YELP_KEY,
+                    oauth_token: YELP_TOKEN,
+                    oauth_nonce: nonce_generate(),
+                    oauth_timestamp: Math.floor(Date.now()/1000),
+                    oauth_signature_method: 'HMAC-SHA1',
+                    oauth_version : '1.0',
+                    callback: 'cb'
+                };
+
+                var encodedSignature = oauthSignature.generate('GET',yelp_url, parameters, YELP_KEY_SECRET, YELP_TOKEN_SECRET);
+                parameters.oauth_signature = encodedSignature;
+
+                var settings = {
+                    url: yelp_url,
+                    data: parameters,
+                    cache: true,
+                    dataType: 'jsonp',
+                    success: function(results) {
+                        //assign variables from the AJAX response
+                        console.log('inside ajax success: ' + results.name);
+                        var name = results.name;
+                        var address = results.location.display_address[0];
+                        var phone = results.phone;
+                        var rating = results.rating;
+                        var img = results.image_url;
+                        var contentString =
+                            '<div id="iw-container">'+
+                                '<div id="iw-body">'+
+                                    '</div>'+
+                                        '<h3 id="iw-title" class="iw-title">'+ name + '</h3>'+
+                                        '<div id="iwContent">'+
+                                            '<h4> Rating: ' + rating + '</h4>' +
+                                            '<p>' + phone + '</p>'+
+                                            '<p>' + address + '</p>'+
+                                            '<img class="iw-img" src="' + img + '">' +
+                                        '</div>'+
+                                    '</div>' +
+                                '</div>' +
+                            '</div>';
+                    },
+                    fail: function() {
+                        console.log('yelp call failed')
+                    }
+                };
+                // Send AJAX query via jQuery library.
+                $.ajax(settings);
+
 
                 //assign each element of the marker array
                 //with the hotspot lattitude/longitude
@@ -180,8 +234,8 @@ var ViewModel = function() {
 
                 //declare an infowindow for each marker
                 markerArray[i].infowindow = new google.maps.InfoWindow({
-                        content: contentString
-                    });
+                    content: contentString
+                });
 
                 //declare a click event for each marker
                 //close last infowindow and open current infowindow
@@ -189,7 +243,7 @@ var ViewModel = function() {
                     return function() {
                         markerArray[lastMarker].infowindow.close();
                         markerArray[lastMarker].setAnimation(null);
-                        lastMarker = setLastMarker(marker.title);
+                        lastMarker = setLastMarkerIndex(marker.title);
                         marker.setAnimation(google.maps.Animation.BOUNCE);
                         marker.infowindow.open(map, marker);
                     }
@@ -199,11 +253,10 @@ var ViewModel = function() {
         addMarkers();
     };
 
-
-    setLastMarker = function(name) {
-        console.log('setLastMarker incoming name is: ' + name);
-        for(var i=0; i < model.livermoreHotspotsArray.length; i++) {
-            if  (model.livermoreHotspotsArray[i].name === name) {
+    setLastMarkerIndex = function(name) {
+        console.log('setLastMarkerIndex incoming name is: ' + name);
+        for(var i=0; i < Model.livermoreHotspotsArray.length; i++) {
+            if  (Model.livermoreHotspotsArray[i].name === name) {
                 console.log(i);
                 return i;
             }
@@ -219,7 +272,7 @@ var ViewModel = function() {
         markerArray[lastMarker].infowindow.close();
         markerArray[lastMarker].setAnimation(null);
         console.log('last marker value : ' + lastMarker);
-        lastMarker = setLastMarker(self.currentHotSpot().hotSpotName());
+        lastMarker = setLastMarkerIndex(self.currentHotSpot().hotSpotName());
         console.log('last marker value after assignment : ' + lastMarker);
         openHotSpotInfoWindow(hotSpot);
     };
@@ -234,62 +287,6 @@ var ViewModel = function() {
         };
     };
 
-
-function callYelp() {
-
-        YELP_KEY = 'VjJd2U6caWsD2g38tKHMXQ';
-        YELP_TOKEN = 'gyokE6rE7mBgDJLRtS_5KDs5fg8JiQwf';
-        YELP_KEY_SECRET = 'CYxufrUy2vCYVt1IZeY-gl2PBTc';
-        YELP_TOKEN_SECRET = 'soyEBse-Ftw2yEeROG6sGoSgc6Q';
-        YELP_BASE_URL = 'https://api.yelp.com/v2/';
-
-        /**
-         * Generates a random number and returns it as a string for OAuthentication
-         * @return {string}
-         */
-        function nonce_generate() {
-          return (Math.floor(Math.random() * 1e12).toString());
-        }
-
-        console.log('currentHotSpot id: ' + self.currentHotSpot().hotSpotId);
-        var yelp_url = YELP_BASE_URL + 'business/' + self.currentHotSpot().hotSpotId;
-
-            var parameters = {
-              oauth_consumer_key: YELP_KEY,
-              oauth_token: YELP_TOKEN,
-              oauth_nonce: nonce_generate(),
-              oauth_timestamp: Math.floor(Date.now()/1000),
-              oauth_signature_method: 'HMAC-SHA1',
-              oauth_version : '1.0',
-              callback: 'cb'
-            };
-
-            var encodedSignature = oauthSignature.generate('GET',yelp_url, parameters, YELP_KEY_SECRET, YELP_TOKEN_SECRET);
-            parameters.oauth_signature = encodedSignature;
-
-            var settings = {
-              url: yelp_url,
-              data: parameters,
-              cache: true,
-              dataType: 'jsonp',
-              success: function(results) {
-                console.log(results);
-                console.log(results.location.display_address[0]);
-                console.log(results.location.display_address[1]);
-                console.log(results.name);
-                console.log(results.image_url);
-                console.log(results.phone);
-              },
-              fail: function() {
-                console.log('yelp call failed')
-              }
-            };
-
-            // Send AJAX query via jQuery library.
-            $.ajax(settings);
-};
-
-    callYelp();
     google.maps.event.addDomListener(window, 'load', initialize());
 
 };  //end of View Model
@@ -300,8 +297,8 @@ function googleSuccess() {
     ko.applyBindings(new ViewModel());
 };
 function googleError() {
-    alert('I'm sorry we seem to have lost our internet connection);
-    console.log('in googleErro');
+    alert('Sorry we seem to have lost our internet connection');
+    console.log('in googleError');
 };
 
 
