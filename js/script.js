@@ -202,9 +202,13 @@ var ViewModel = function() {
                                 '</div>' +
                             '</div>';
 
-                        //call setSetInfoWindowContent passing
-                        //the name and content string
-                        setInfoWindowContent(name, contentString);
+                        //loop through markerArray and find name match
+                        //then set the infowindow contents
+                        for(var i=0; i < markerArray.length; i++) {
+                            if  (markerArray[i].title === name) {
+                                markerArray[i].infowindow.setContent(contentString);
+                            };
+                        };
                     },
                     fail: function() {
                         contentString =
@@ -307,17 +311,6 @@ var ViewModel = function() {
     this.highLiteHotSpot = function(hotspot) {
         console.log('mouseover is working');
 
-    };
-
-
-    //search markerArray for name match and
-    //set infowindow content
-    setInfoWindowContent = function(name, content) {
-            for(var i=0; i < markerArray.length; i++) {
-                if  (markerArray[i].title === name) {
-                    markerArray[i].infowindow.setContent(content);
-                };
-            };
     };
 
 
