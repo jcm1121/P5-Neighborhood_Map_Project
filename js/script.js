@@ -115,6 +115,7 @@ var ViewModel = function() {
                 setMarker(hotSpot);
             return hotSpot.hotSpotName().toLowerCase().indexOf(self.query().toLowerCase()) >= 0;
         });
+        deferEvaluation: true
     });
 
 
@@ -307,13 +308,6 @@ var ViewModel = function() {
             }
         };
     };
-
-    this.highLiteHotSpot = function(hotspot) {
-        console.log('mouseover is working');
-
-    };
-
-
 
     google.maps.event.addDomListener(window, 'load', initialize());
 

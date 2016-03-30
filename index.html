@@ -11,8 +11,8 @@
 
     <div class="container">
         <div class="hotSpots">
-            <input class="searchBox" type="search"
-                data-bind= "textInput: query, valueUpdate: 'keyup'">  Search For A Hotspot</input>
+            <input class="searchBox" type="search" value="Search"
+                data-bind= "textInput: query, valueUpdate: 'keyup'"></input>
             <h2 class="hotSpotTitle">Livermore Hotspots</h2>
             <ul data-bind="foreach: search()" class="hotSpotList">
                 <li data-bind="text: hotSpotName, click: $parent.viewHotSpot, event: {mouseover: $parent.highLiteHotSpot}" class="hotSpot"></li>
