@@ -69,8 +69,7 @@ var Model = {
         {
             name: 'El Charro',
             latLng: {lat: 37.6835189, lng: -121.76601},
-            id: 'el-charrp'
-//            id: 'el-charro-livermore-3'
+            id: 'el-chappo'
         }
     ]
 };
@@ -150,6 +149,8 @@ var ViewModel = function() {
                 var latLng = Model.livermoreHotspotsArray[i].latLng;
                 var name = Model.livermoreHotspotsArray[i].name;
 
+                //declare contentString variable for use
+                //in several places below
                 var contentString = '';
 
                 //assign each element of the marker array
@@ -163,6 +164,7 @@ var ViewModel = function() {
                 });
 
                 //declare an infowindow for each marker
+                //and set an empty content string
                 markerArray[i].infowindow = new google.maps.InfoWindow({
                     content: contentString
                 });
@@ -180,6 +182,10 @@ var ViewModel = function() {
                 })(markerArray[i]));
 
 
+                //this timer is assigned to each markerArray element
+                //it runs for 3 secs, if not stopped with a successful
+                //AJAX call, it will write a generic contentString
+                //and set infowindow contents.
                 var startAjaxTimer = function (i) {
                     markerArray[i][0] = setTimeout(function(){
                         console.log('inside timer ' + markerArray[i].title);
@@ -187,9 +193,11 @@ var ViewModel = function() {
                             '<div id="iw-container">'+
                                 '<div id="iw-body">'+
                                     '</div>'+
+                                        '<h3 id="iw-title" class="iw-title">'+ markerArray[i].title + '</h3>'+
                                         '<div id="iwContent">'+
-                                            '<p>Sorry, we could not get data ' +
-                                            'for this hot spot</p>' +
+                                            '<p>We are sorry</p>'+
+                                            '<p>no info is available</p>'+
+                                            '<p>for this hotspot</p>'+
                                         '</div>'+
                                     '</div>' +
                                 '</div>' +
@@ -263,26 +271,10 @@ var ViewModel = function() {
                                 markerArray[i].infowindow.setContent(contentString);
                             }
                         }
-                    },
-                    error: function() {
-                        console.log('inside error' + status);
-                        contentString =
-                            '<div id="iw-container">'+
-                                '<div id="iw-body">'+
-                                    '</div>'+
-                                        '<div id="iwContent">'+
-                                            '<p>Sorry, we could not get data ' +
-                                            'for this hot spot</p>' +
-                                        '</div>'+
-                                    '</div>' +
-                                '</div>' +
-                            '</div>';
                     }
                 };
                 // Send AJAX query via jQuery library.
                 $.ajax(settings);
-
-
             } //end of for loop
         };//end of addMarkers function
         addMarkers();
