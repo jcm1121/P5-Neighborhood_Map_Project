@@ -69,7 +69,8 @@ var Model = {
         {
             name: 'El Charro',
             latLng: {lat: 37.6835189, lng: -121.76601},
-            id: 'el-charro-livermore-3'
+            id: 'el-charrp'
+//            id: 'el-charro-livermore-3'
         }
     ]
 };
@@ -92,6 +93,14 @@ var ViewModel = function() {
     var lastMarker = 0;
     var map = null;
 
+    //declare YELP Info variables
+    //for the AJAX call
+    var YELP_KEY = 'VjJd2U6caWsD2g38tKHMXQ';
+    var YELP_TOKEN = 'gyokE6rE7mBgDJLRtS_5KDs5fg8JiQwf';
+    var YELP_KEY_SECRET = 'CYxufrUy2vCYVt1IZeY-gl2PBTc';
+    var YELP_TOKEN_SECRET = 'soyEBse-Ftw2yEeROG6sGoSgc6Q';
+    var YELP_BASE_URL = 'https://api.yelp.com/v2/';
+
     //declare hotSpotList observable array
     self.hotSpotList = ko.observableArray([]);
 
@@ -111,11 +120,11 @@ var ViewModel = function() {
     self.search = ko.computed(function() {
         clearMarkers();
         return ko.utils.arrayFilter(self.hotSpotList(), function(hotSpot) {
-            if (hotSpot.hotSpotName().toLowerCase().indexOf(self.query().toLowerCase()) >= 0)
+            if (hotSpot.hotSpotName().toLowerCase().indexOf(self.query().toLowerCase()) >= 0) {
                 setMarker(hotSpot);
+            }
             return hotSpot.hotSpotName().toLowerCase().indexOf(self.query().toLowerCase()) >= 0;
         });
-        deferEvaluation: true
     });
 
 
@@ -143,12 +152,54 @@ var ViewModel = function() {
 
                 var contentString = '';
 
-                //YELP info for AJAX call
-                YELP_KEY = 'VjJd2U6caWsD2g38tKHMXQ';
-                YELP_TOKEN = 'gyokE6rE7mBgDJLRtS_5KDs5fg8JiQwf';
-                YELP_KEY_SECRET = 'CYxufrUy2vCYVt1IZeY-gl2PBTc';
-                YELP_TOKEN_SECRET = 'soyEBse-Ftw2yEeROG6sGoSgc6Q';
-                YELP_BASE_URL = 'https://api.yelp.com/v2/';
+                //assign each element of the marker array
+                //with the hotspot lattitude/longitude
+                markerArray[i] = new google.maps.Marker({
+                    position: latLng,
+                    map: map,
+                    title: name,
+                    animation: google.maps.Animation.DROP,
+                    clickable: true
+                });
+
+                //declare an infowindow for each marker
+                markerArray[i].infowindow = new google.maps.InfoWindow({
+                    content: contentString
+                });
+
+                //declare a click event for each marker
+                //close last infowindow and open current infowindow
+                markerArray[i].addListener('click', (function(marker) {
+                    return function() {
+                        markerArray[lastMarker].infowindow.close();
+                        markerArray[lastMarker].setAnimation(null);
+                        lastMarker = setLastMarkerIndex(marker.title);
+                        marker.setAnimation(google.maps.Animation.BOUNCE);
+                        marker.infowindow.open(map, marker);
+                    };
+                })(markerArray[i]));
+
+
+                var startAjaxTimer = function (i) {
+                    markerArray[i][0] = setTimeout(function(){
+                        console.log('inside timer ' + markerArray[i].title);
+                        contentString =
+                            '<div id="iw-container">'+
+                                '<div id="iw-body">'+
+                                    '</div>'+
+                                        '<div id="iwContent">'+
+                                            '<p>Sorry, we could not get data ' +
+                                            'for this hot spot</p>' +
+                                        '</div>'+
+                                    '</div>' +
+                                '</div>' +
+                            '</div>';
+                        markerArray[i].infowindow.setContent(contentString);
+                    }, 3000)
+
+                };
+                startAjaxTimer(i);
+
 
                /**
                  * Generates a random number and returns it as a string for OAuthentication
@@ -180,6 +231,7 @@ var ViewModel = function() {
                     cache: true,
                     dataType: 'jsonp',
                     success: function(results) {
+                        console.log('inside success');
                         //assign variables from the AJAX response
                         var name = results.name;
                         var address = results.location.display_address[0];
@@ -207,11 +259,13 @@ var ViewModel = function() {
                         //then set the infowindow contents
                         for(var i=0; i < markerArray.length; i++) {
                             if  (markerArray[i].title === name) {
+                                clearTimeout(markerArray[i][0]);
                                 markerArray[i].infowindow.setContent(contentString);
-                            };
-                        };
+                            }
+                        }
                     },
-                    fail: function() {
+                    error: function() {
+                        console.log('inside error' + status);
                         contentString =
                             '<div id="iw-container">'+
                                 '<div id="iw-body">'+
@@ -222,39 +276,14 @@ var ViewModel = function() {
                                         '</div>'+
                                     '</div>' +
                                 '</div>' +
-                            '</div>'
+                            '</div>';
                     }
                 };
                 // Send AJAX query via jQuery library.
                 $.ajax(settings);
 
-                //assign each element of the marker array
-                //with the hotspot lattitude/longitude
-                markerArray[i] = new google.maps.Marker({
-                    position: latLng,
-                    map: map,
-                    title: name,
-                    animation: google.maps.Animation.DROP,
-                    clickable: true
-                });
 
-                //declare an infowindow for each marker
-                markerArray[i].infowindow = new google.maps.InfoWindow({
-                    content: contentString
-                });
-
-                //declare a click event for each marker
-                //close last infowindow and open current infowindow
-                markerArray[i].addListener('click', (function(marker) {
-                    return function() {
-                        markerArray[lastMarker].infowindow.close();
-                        markerArray[lastMarker].setAnimation(null);
-                        lastMarker = setLastMarkerIndex(marker.title);
-                        marker.setAnimation(google.maps.Animation.BOUNCE);
-                        marker.infowindow.open(map, marker);
-                    }
-                })(markerArray[i]));
-            }; //end of for loop
+            } //end of for loop
         };//end of addMarkers function
         addMarkers();
     }; //end of initialize function
@@ -265,8 +294,8 @@ var ViewModel = function() {
         for (var i = 0; i < markerArray.length; i++) {
             markerArray[i].infowindow.close();
             markerArray[i].setMap(null);
-        };
-    };
+        }
+    }
 
     //search the markerArray for a matching name and turn on marker 'setMap'
     function setMarker(hotSpot) {
@@ -274,16 +303,16 @@ var ViewModel = function() {
             if  (markerArray[i].title.toLowerCase() === hotSpot.hotSpotName().toLowerCase()) {
                 markerArray[i].setMap(map);
             }
-        };
-    };
+        }
+    }
 
     //return the index of the marker that matches the name passed
-    setLastMarkerIndex = function(name) {
+    function setLastMarkerIndex(name) {
         for(var i=0; i < Model.livermoreHotspotsArray.length; i++) {
             if  (Model.livermoreHotspotsArray[i].name === name) {
                 return i;
             }
-        };
+        }
     };
 
     //this function is called from the
@@ -306,22 +335,23 @@ var ViewModel = function() {
                 markerArray[i].setAnimation(google.maps.Animation.BOUNCE);
                 markerArray[i].infowindow.open(map, markerArray[i]);
             }
-        };
+        }
     };
 
-    google.maps.event.addDomListener(window, 'load', initialize());
+//execute the initialize function
+initialize();
 
 };  //end of View Model
 
 
 function googleSuccess() {
     ko.applyBindings(new ViewModel());
-};
+}
 
 function googleError() {
     ko.applyBindings(new ViewModel());
     alert('Sorry we seem to have lost our google maps connection');
-};
+}
 
 
 
