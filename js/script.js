@@ -135,6 +135,7 @@ var ViewModel = function() {
         };
 
         //declare map and assign a new google map
+//        map = new google.maps.Map(document.getElementById("googleMap"),mapProp);
         map = new google.maps.Map(document.getElementById("googleMap"),mapProp);
 
         //loop through the model data creating a marker, infowindow,
@@ -329,21 +330,27 @@ var ViewModel = function() {
             }
         }
     };
-
 //execute the initialize function
 initialize();
-
 };  //end of View Model
 
 
+
 function googleSuccess() {
-    ko.applyBindings(new ViewModel());
-}
+    if (typeof google !== 'undefined') {
+        ko.applyBindings(new ViewModel());
+    }
+    else {
+        console.log('google is undefined');
+        googleError();
+    }
+
+};
 
 function googleError() {
-    ko.applyBindings(new ViewModel());
+    console.log('inside google error');
     alert('Sorry we seem to have lost our google maps connection');
-}
+};
 
 
 
